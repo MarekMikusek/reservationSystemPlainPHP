@@ -1,0 +1,56 @@
+CREATE DATABASE reservations_mm;
+
+CREATE TABLE persons (
+    person_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(30) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(12),
+    email VARCHAR(100),
+    description VARCHAR(3000)
+);
+
+CREATE TABLE places(
+    place_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL,
+    description VARCHAR(300)
+);
+
+CREATE TABLE equipments(
+    equipment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(100) NOT NULL,
+    model VARCHAR(100),
+    mark VARCHAR(100),
+    puchase_year YEAR(4) NOT NULL,
+    value DECIMAL(8,2),
+    description VARCHAR(3000),
+    place_id INT UNSIGNED,
+    FOREIGN KEY (place_id) REFERENCES places(place_id)
+);
+
+CREATE TABLE reservations(
+    reservation_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    person_id INT UNSIGNED NOT NULL,
+    place_id INT UNSIGNED NOT NULL,
+    start DATETIME NOT NULL,
+    end DATETIME NOT NULL,
+    FOREIGN KEY (person_id) REFERENCES persons(person_id),
+    FOREIGN KEY (place_id) REFERENCES places(place_id)
+);
+
+
+INSERT INTO persons (first_name,last_name,phone,email,description) VALUES 
+('Jan', 'Nowak', '6000000', 'jan@nowak.pl', 'Pierwszy użytkownik systemu')
+,('Tomasz', 'Kowalski', '611111', 'tomasz@kowalski.pl', 'Drugi użytkownik systemu');
+
+INSERT INTO places(name,description) VALUES 
+('Salka 1', 'Mała sala konferencyjna obok serkretariatu')
+,('Salka 2', 'Duża sala konferencyjna');
+
+INSERT INTO  equipments(type,model,mark,puchase_year,value,description,place_id) VALUES 
+('komputer', 'DELL100', 'KOMP 1', 2018, 4000, 'DELL 100 z roku 2018', 1)
+,('projektor', 'NoName', 'projektor 1', 2019, 2000, 'Projektor 1', 2);
+
+INSERT INTO reservations(person_id,place_id,start,end) VALUES
+(1,1, NOW(), ADDTIME(NOW(), '0 1:30:00')),
+(2,2, ADDTIME(NOW(), '0 1:30:00'), ADDTIME(NOW(), '0 3:30:00'));
+

@@ -12,22 +12,30 @@
     <script src='js/app.js'></script>
 </head>
 <body>
-<h1>Welcome to office reservations system</h1>
-    <div class="bs-component">
-        <ul class="nav nav-pills">
-           <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle active" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Reservations</a>
-                <div class="dropdown-menu" style="">
-                    <a class="dropdown-item" href="#">Show all</a>
-                    <a class="dropdown-item" href="#">Add</a>
-                    <a class="dropdown-item" href="#">Delete</a>
-                    </div>
-                </li>
-    </ul>
+<h1 class="mb-5">Witamy w syetmie rezerwacji miejsc</h1>
+<div id="actions" class="ml-5">
+    <label for="reservations-date">Data: </label>
+    <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
+    <button id="add-reservation" class="btn btn-primary m-3">Dodaj rezerwację</button>
+    <button id="add-reservation" class="btn btn-info m-3">Zarządzaj miejscami</button>
+    <button id="add-reservation" class="btn btn-secondary m-3">Zarządzaj wyposażeniem</button>
+    <button id="add-reservation" class="btn btn-warning m-3">Zarządzaj użytkownikami</button>
 </div>
-            
+    <div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rezerwujący/a</th>
+                    <th>Początek</th>
+                    <th>Koniec</th>
+                    <th>Miejsce</th>
+                </tr>
+            </thead>
+            <tbody id="reservations-list">
+
+            </tbody>
+        </table>        
+    </div>
     
 </body>
-
-
 </html>
