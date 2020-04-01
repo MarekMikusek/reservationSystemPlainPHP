@@ -15,12 +15,12 @@ CREATE TABLE places(
     description VARCHAR(300)
 );
 
-CREATE TABLE equipments(
+CREATE TABLE equipment(
     equipment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     type VARCHAR(100) NOT NULL,
     model VARCHAR(100),
     mark VARCHAR(100),
-    puchase_year YEAR(4) NOT NULL,
+    purchase_year YEAR(4) NOT NULL,
     value DECIMAL(8,2),
     description VARCHAR(3000),
     place_id INT UNSIGNED,
@@ -46,7 +46,7 @@ INSERT INTO places(name,description) VALUES
 ('Salka 1', 'Mała sala konferencyjna obok serkretariatu')
 ,('Salka 2', 'Duża sala konferencyjna');
 
-INSERT INTO  equipments(type,model,mark,puchase_year,value,description,place_id) VALUES 
+INSERT INTO  equipment(type,model,mark,purchase_year,value,description,place_id) VALUES 
 ('komputer', 'DELL100', 'KOMP 1', 2018, 4000, 'DELL 100 z roku 2018', 1)
 ,('projektor', 'NoName', 'projektor 1', 2019, 2000, 'Projektor 1', 2);
 

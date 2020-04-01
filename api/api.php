@@ -1,19 +1,26 @@
 <?php
 
-
-
         $action = $_POST['action'];
 
         switch($action)
         {
             case 'addReservation':
-                error_log('add');
                 echo json_encode(addReservation($_POST['reservation']));
+            break;
+            case 'getEquipment':
+                echo json_encode(getEquipment());
+            break;
+            case 'getPlaces':
+                echo json_encode(getPlaces());
             break;
             case 'getReservations':
                 echo json_encode(getReservations($_POST['date']));
             break;
+            case 'getPersons':
+                echo json_encode(getPersons());
+            break;
         }
+
 function addReservation($reservation){
         $allowedColumns = ['person_id'=>1, 'place_id' => 1, 'start'=>1, 'end'=>1];
         $newData =[];
@@ -31,6 +38,33 @@ function addReservation($reservation){
         $ret = safeQuery(false, $insertStatment, [$columns, $values]);
         error_log(gettype($ret));
         return $ret;
+}
+
+function getEquipment(){
+    $statment = "SELECT equipment_id, type, model, mark, purchase_year, value, e.description, p.name "
+    ."FROM `equipment` e LEFT JOIN places p ON p.place_id = e.place_id";
+    return safeQuery(true, $statment,[]);
+}
+
+function getPersons(){
+    $statment = "SELECT `person_id`, `first_name`, `last_name`, `phone`, `email`, `description` FROM `persons`";
+    return safeQuery(true, $statment,[]);
+}
+
+function getPlaces(){
+    $places = safeQuery(true, "SELECT place_id, name, description FROM places",[]);
+    $equipmentList = safeQuery(true, "SELECT equipment_id, place_id, mark FROM equipment",[]);
+    $placesEquipment =[];
+    foreach($equipmentList as $equipment){
+        if(!isset($placesEquipment[$equipment['place_id']])){
+            $placesEquipment[$equipment['place_id']] = [];
+        }
+        $placesEquipment[$equipment['place_id']][]=$equipment['mark'];
+    }
+    foreach($places as &$place){
+        $place['equipment'] = implode(', ', $placesEquipment[$place['place_id']]);
+    }
+    return $places;
 }
     function getReservations($date){
     

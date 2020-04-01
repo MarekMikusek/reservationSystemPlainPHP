@@ -17,10 +17,10 @@
 <div id="actions" class="ml-5 text-center">
     <label for="reservations-date">Data: </label>
     <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
-    <button class="btn btn-primary m-3 main-menu-button" data-div="reservations">Pokaż rezerwacje</button>
-    <button class="btn btn-info m-3 main-menu-button" data-div="places">Zarządzaj miejscami</button>
-    <button class="btn btn-secondary m-3 main-menu-button" data-div="equipment">Zarządzaj wyposażeniem</button>
-    <button class="btn btn-warning m-3 main-menu-button" data-div="users">Zarządzaj użytkownikami</button>
+    <button id="show-reservations" class="btn btn-primary m-3 main-menu-button" data-div="reservations">Pokaż rezerwacje</button>
+    <button id="show-places" class="btn btn-info m-3 main-menu-button" data-div="places">Zarządzaj miejscami</button>
+    <button id="show-equipment" class="btn btn-secondary m-3 main-menu-button" data-div="equipment">Zarządzaj wyposażeniem</button>
+    <button id="show-persons" class="btn btn-warning m-3 main-menu-button" data-div="persons">Zarządzaj użytkownikami</button>
 </div>
     <div class="main-menu-item" id="reservations">
         <table class="table table-striped text-center">
@@ -47,7 +47,7 @@
             </tbody>
         </table>        
     </div>
-    <div class="main-menu-item d-none" id="users">
+    <div class="main-menu-item d-none" id="persons">
         <table class="table table-striped text-center">
                 <thead>
                     <tr>
@@ -69,7 +69,7 @@
                         <td><button id="add-user" class="btn btn-warning">Dodaj użytkownika</button></td>
                     </tr>
                 </tbody>
-                <tbody id="users-list">
+                <tbody id="persons-list">
 
                 </tbody>
             </table> 
@@ -80,6 +80,7 @@
                     <tr>
                         <th>Oznaczenie</th>
                         <th>Opis</th>
+                        <th>Wyposażenie</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -87,6 +88,7 @@
                     <tr>
                         <td><input type="text" name="name"></td>
                         <td><input type="text" name="description"></td>
+                        <td>Wyposażenie można dodać <br>w zakładce "Wyposażenie"</td>
                         <td><button id="add-place" class="btn btn-info">Dodaj miejsce</button></td>
                     </tr>
                 </tbody>
