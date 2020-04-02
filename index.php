@@ -13,15 +13,16 @@
     <script src='js/app.js'></script>
 </head>
 <body>
-<h1 class="mb-5 text-center">Witamy w systemie rezerwacji miejsc</h1>
-<div id="actions" class="ml-5 text-center">
-    <label for="reservations-date">Data: </label>
-    <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
-    <button id="show-reservations" class="btn btn-primary m-3 main-menu-button" data-div="reservations">Pokaż rezerwacje</button>
-    <button id="show-places" class="btn btn-info m-3 main-menu-button" data-div="places">Zarządzaj miejscami</button>
-    <button id="show-equipment" class="btn btn-secondary m-3 main-menu-button" data-div="equipment">Zarządzaj wyposażeniem</button>
-    <button id="show-persons" class="btn btn-warning m-3 main-menu-button" data-div="persons">Zarządzaj użytkownikami</button>
-</div>
+    <h1 class="mb-5 text-center">Witamy w systemie rezerwacji miejsc</h1>
+    <div id="actions" class="ml-5 text-center">
+        <label for="reservations-date">Data: </label>
+        <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
+        <button id="show-reservations" class="btn btn-primary m-3 main-menu-button" data-div="reservations">Pokaż rezerwacje</button>
+        <button id="show-places" class="btn btn-info m-3 main-menu-button" data-div="places">Zarządzaj miejscami</button>
+        <button id="show-equipment" class="btn btn-secondary m-3 main-menu-button" data-div="equipment">Zarządzaj wyposażeniem</button>
+        <button id="show-persons" class="btn btn-warning m-3 main-menu-button" data-div="persons">Zarządzaj użytkownikami</button>
+    </div>
+    <h1 id="menu-title" class="mb-5 text-center">Lista rezerwacji</h1>
     <div class="main-menu-item" id="reservations">
         <table class="table table-striped text-center">
             <thead>
@@ -34,11 +35,11 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><select id="new-reservation-user" class="form-control"></select></td>
-                    <td><input id="new-reservation-start" type="time" class="form-control" required></td>
-                    <td><input id="new-reservation-end" type="time" class="form-control" required></td>
-                    <td><select id="new-reservation-place" class="form-control"></select></td>
+                <tr id="new-reservation-data">
+                    <td><select id="new-reservation-person" name="person_id" class="form-control" required></select></td>
+                    <td><input type="time" name="start" class="form-control" required></td>
+                    <td><input type="time" name="end" class="form-control" required></td>
+                    <td><select id="new-reservation-place" name="place_id" class="form-control" required></select></td>
                     <td><button id="add-reservation" class="btn btn-primary">Dodaj rezerwację</button></td>
                 </tr>
             </tbody>
@@ -60,13 +61,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                <tr>
-                        <td><input type="text" name="first_name"></td>
-                        <td><input type="text" name="last_name"></td>
+                    <tr id="new-person-data">
+                        <td><input type="text" name="first_name" required></td>
+                        <td><input type="text" name="last_name" required></td>
                         <td><input type="tel" name="phone"></td>
                         <td><input type="email" name="email"></td>
                         <td><input type="text" name="description"></td>
-                        <td><button id="add-user" class="btn btn-warning">Dodaj użytkownika</button></td>
+                        <td><button id="add-person" class="btn btn-warning">Dodaj użytkownika</button></td>
                     </tr>
                 </tbody>
                 <tbody id="persons-list">
@@ -85,9 +86,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><input type="text" name="name"></td>
-                        <td><input type="text" name="description"></td>
+                    <tr id="new-place-data">
+                        <td><input type="text" name="name" required></td>
+                        <td><input type="text" name="description" required></td>
                         <td>Wyposażenie można dodać <br>w zakładce "Wyposażenie"</td>
                         <td><button id="add-place" class="btn btn-info">Dodaj miejsce</button></td>
                     </tr>
@@ -112,15 +113,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="new-equipment-inputs">
-                        <td><input type="text" name="type"></td>
-                        <td><input type="text" name="model"></td>
-                        <td><input type="text" name="mark"></td>
-                        <td><input type="number" name="purchase_year"></td>
-                        <td><input type="number" name="value"></td>
+                    <tr id="new-equipment-data">
+                        <td><input type="text" name="type" required></td>
+                        <td><input type="text" name="model" required></td>
+                        <td><input type="text" name="mark" required></td>
+                        <td><input type="number" name="purchase_year" required></td>
+                        <td><input type="number" name="value" required></td>
                         <td><input type="text" name="description"></td>
-                        <td><select id="new-reservation-place" class="form-control" name="place_id"></select></td>
-                        <td><button id="add-equipmet" class="btn btn-secondary">Dodaj wyposażenie</button></td>
+                        <td><select id="new-equipment-place" class="form-control" name="place_id" required></select></td>
+                        <td><button id="add-equipment" class="btn btn-secondary">Dodaj wyposażenie</button></td>
                     </tr>
                 </tbody>
                 <tbody id="equipment-list">
@@ -128,6 +129,24 @@
                 </tbody>
             </table> 
     </div>
+    <div class="main-menu-item d-none mb-5 form-group" id="change-equipment-place">
+        <table class="w-100 text-center mt-5">
+            <tbody>
+                <tr>
+                    <td>
+                        <label for="equipment-to-change-place">Oznaczenie wyposażenia:</label>
+                        <h3 id="equipment-to-change-place"></h3>
+                    </td>
+                    <td id="change-place-inputs">
+                        <label for="places-to-change">Miejsce:</label>
+                        <select name="place_id" id="change_place_place_id" class="form-control" ></select>
+                        <input id="change_place_equipment_id" type="hidden" name="equipment_id">
+                    </td>
+                    <td><button id="save-equipment-place" class="btn btn-secondary">Zapisz</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div> 
     
 </body>
 </html>
