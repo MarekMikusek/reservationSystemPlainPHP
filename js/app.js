@@ -2,6 +2,8 @@ var apiUrl = "http://localhost/reservations/api/api.php";
 
 var locked = false;
 
+var placeEquipment = {};
+
 function addReservation() {
     locked = true;
     let date = $('#reservations-date').val();
@@ -15,13 +17,13 @@ function addReservation() {
             'reservation': reservation
         });
         resp
-            .then(function () {
-                clearInputs('#new-reservation-data');
-                showReservations();
-            })
-            .fail(function () {
+                .then(function () {
+                    clearInputs('#new-reservation-data');
+                    showReservations();
+                })
+                .fail(function () {
 
-            });
+                });
     }
     locked = false;
 }
@@ -29,13 +31,14 @@ function addReservation() {
 function addPerson() {
     let person = getInputsData('#new-person-data');
     if (person['error'] !== 1) {
+        delete person['error'];
         let response = getApi({
             'action': 'addPerson',
             'person': person
         });
         response.then(function () {
             locked = false;
-            $('#show-persons').click().trigger();
+            $('#show-persons').click();
             clearInputs('#new-person-data');
         });
     }
@@ -85,19 +88,19 @@ function changeEquipmentPlace(id) {
         'equipmentId': id
     });
     response
-        .then(function (encoded) {
-            let response = JSON.parse(encoded);
-            let places = response['places'];
-            let equipment = response['equipment'];
-            $('#equipment-to-change-place').text(equipment[0]['mark']);
-            let options = '<option value="">--</option>';
-            places.forEach(function (place) {
-                options += makeOption(place['name'], place['place_id']);
-            })
-            $('#change_place_equipment_id').val(equipment[0]['equipment_id']);
-            $('#change_place_place_id').html(options);
-            $('#change_place_place_id option[value=' + equipment[0]['place_id'] + ']').prop('selected', 'selected')
-        });
+            .then(function (encoded) {
+                let response = JSON.parse(encoded);
+                let places = response['places'];
+                let equipment = response['equipment'];
+                $('#equipment-to-change-place').text(equipment[0]['mark']);
+                let options = '<option value="">--</option>';
+                places.forEach(function (place) {
+                    options += makeOption(place['name'], place['place_id'], null);
+                })
+                $('#change_place_equipment_id').val(equipment[0]['equipment_id']);
+                $('#change_place_place_id').html(options);
+                $('#change_place_place_id option[value=' + equipment[0]['place_id'] + ']').prop('selected', 'selected')
+            });
 }
 
 function clearInputs(elementName) {
@@ -123,24 +126,24 @@ function getInputsData(formName) {
     let value;
     output['error'] = 0;
     $(formName + ' input').each(
-        function () {
-            value = $(this).val();
-            if ($(this).prop('required') && value === '') {
-                $(this).after('<div class="missing-input">Proszę podać wartość</div>');
-                output['error'] = 1;
+            function () {
+                value = $(this).val();
+                if ($(this).prop('required') && value === '') {
+                    $(this).after('<div class="missing-input">Proszę podać wartość</div>');
+                    output['error'] = 1;
+                }
+                output[$(this).attr('name')] = value;
             }
-            output[$(this).attr('name')] = value;
-        }
     );
     $(formName + ' select').each(
-        function () {
-            value = $(this).val();
-            if (value === '') {
-                $(this).after('<div class="missing-input">Proszę podać wartość</div>');
-                output['error'] = 1;
+            function () {
+                value = $(this).val();
+                if (value === '') {
+                    $(this).after('<div class="missing-input">Proszę podać wartość</div>');
+                    output['error'] = 1;
+                }
+                output[$(this).attr('name')] = value;
             }
-            output[$(this).attr('name')] = value;
-        }
     );
     return output;
 }
@@ -149,8 +152,16 @@ function makeButton(className, id, name) {
     return `<button class="${className}" data-id="${id}">${name}</button>`;
 }
 
-function makeOption(optionName, value) {
-    return `<option value='${value}'>${optionName}</option>`;
+function makeOption(optionName, value, title) {
+    let titleAttr = '';
+    if (title) {
+        titleAttr = `title="${title}"`;
+    }
+    return `<option value='${value}' ${titleAttr}>${optionName}</option>`;
+}
+
+function makeRemoveButton(className, id, tableName, idName) {
+    return `<button class="${className} remove-button" data-idName="${idName}" data-table="${tableName}" data-id="${id}">Remove</button>`;
 }
 
 function makeTd(content, className) {
@@ -169,6 +180,23 @@ function makeTr(content, className) {
     return '<tr' + classPart + '>' + content + '</tr>';
 }
 
+function removeItem(id, idName, tableName) {
+    let response = getApi({
+        'action': 'removeItem',
+        'item': {
+            'id': id,
+            'table': tableName,
+            'idName': idName
+        }
+    });
+    response.then(function () {
+        console.log(response);
+        console.log(`#show-${tableName}`);
+        $(`#show-${tableName}`).click();
+    });
+
+}
+
 function saveEquipmentPlace() {
     let new_place = getInputsData('#change-place-inputs');
     if (new_place['error'] !== 1) {
@@ -178,100 +206,100 @@ function saveEquipmentPlace() {
             'new_place': new_place
         });
         response
-            .then(function () {
-                locked = false;
-                $('#show-equipment').click();
-            });
+                .then(function () {
+                    locked = false;
+                    $('#show-equipment').click();
+                });
     }
 }
 
 function showEquipment() {
-    $('#menu-title').text('Lista wyposażenia');
+    $('#menu-title').text('Equipment');
     locked = true;
     let response = getApi({
         'action': 'getEquipment'
     });
     response
-        .then(function (encoded) {
-            let data = JSON.parse(encoded);
-            if (data['equipment'].length > 0) {
-                let equipmentHtml = '';
-                data['equipment'].forEach(function (equipment) {
-                    equipmentHtml += makeTr(
-                        makeTd(equipment['type']) +
-                        makeTd(equipment['model']) +
-                        makeTd(equipment['mark']) +
-                        makeTd(equipment['purchase_year']) +
-                        makeTd(equipment['value']) +
-                        makeTd(equipment['description']) +
-                        makeTd(equipment['name']) +
-                        makeTd(makeButton('btn btn-danger remove-place m-1', equipment['equipment_id'], 'Usuń') +
-                            makeButton('btn btn-success update-place m-1 change-equipment-place', equipment['equipment_id'], 'Zmień miejsce'))
-                    );
+            .then(function (encoded) {
+                let data = JSON.parse(encoded);
+                if (data['equipment'].length > 0) {
+                    let equipmentHtml = '';
+                    data['equipment'].forEach(function (equipment) {
+                        equipmentHtml += makeTr(
+                                makeTd(equipment['type']) +
+                                makeTd(equipment['model']) +
+                                makeTd(equipment['mark']) +
+                                makeTd(equipment['purchase_year']) +
+                                makeTd(equipment['value']) +
+                                makeTd(equipment['description']) +
+                                makeTd(equipment['name']) +
+                                makeTd(makeRemoveButton('btn btn-danger remove-place m-1', equipment['equipment_id'], 'equipment', 'equipment_id') +
+                                        makeButton('btn btn-success update-place m-1 change-equipment-place', equipment['equipment_id'], 'Change place'))
+                                );
+                    });
+                    $('#equipment-list').html(equipmentHtml);
+                }
+                let placesOptions = '<option value="">--</option>';
+                data['places'].forEach(function (place) {
+                    placesOptions += makeOption(place['name'], place['place_id'], null);
                 });
-                $('#equipment-list').html(equipmentHtml);
-            }
-            let placesOptions = '<option value="">--</option>';
-            data['places'].forEach(function (place) {
-                placesOptions += makeOption(place['name'], place['place_id']);
+                $('#new-equipment-place').html(placesOptions);
             });
-            $('#new-equipment-place').html(placesOptions);
-        });
     locked = false;
 }
 
 function showPersons() {
-    $('#menu-title').text('Lista osób');
+    $('#menu-title').text('Persons');
     locked = true;
     let response = getApi({
         'action': 'getPersons'
     });
     response
-        .then(function (encoded) {
-            let persons = JSON.parse(encoded);
-            if (persons.length > 0) {
-                let personsHtml = '';
-                persons.forEach(function (person) {
-                    personsHtml += makeTr(
-                        makeTd(person['first_name']) +
-                        makeTd(person['last_name']) +
-                        makeTd(person['phone']) +
-                        makeTd(person['email']) +
-                        makeTd(person['description']) +
-                        makeTd(makeButton('btn btn-danger remove-place', person['person_id'], 'Usuń osobę'))
-                    );
-                });
-                $('#persons-list').html(personsHtml);
-            }
-        });
+            .then(function (encoded) {
+                let persons = JSON.parse(encoded);
+                if (persons.length > 0) {
+                    let personsHtml = '';
+                    persons.forEach(function (person) {
+                        personsHtml += makeTr(
+                                makeTd(person['first_name']) +
+                                makeTd(person['last_name']) +
+                                makeTd(person['phone']) +
+                                makeTd(person['email']) +
+                                makeTd(person['description']) +
+                                makeTd(makeRemoveButton('btn btn-danger remove-place', person['person_id'], 'persons', 'person_id'))
+                                );
+                    });
+                    $('#persons-list').html(personsHtml);
+                }
+            });
     locked = false;
 }
 
 function showPlaces() {
-    $('#menu-title').text('Lista miejsc pracy');
+    $('#menu-title').text('Places');
     let response = getApi({
         'action': 'getPlaces'
     });
     response
-        .then(function (encoded) {
-            let places = JSON.parse(encoded);
-            if (places.length > 0) {
-                let placesHtml = '';
-                places.forEach(function (place) {
-                    placesHtml += makeTr(
-                        makeTd(place['name']) +
-                        makeTd(place['description']) +
-                        makeTd(place['equipment']) +
-                        makeTd(makeButton('btn btn-danger remove-place', place['place_id'], 'Usuń miejsce'))
-                    );
-                });
-                $('#places-list').html(placesHtml);
-            }
-        });
+            .then(function (encoded) {
+                let places = JSON.parse(encoded);
+                if (places.length > 0) {
+                    let placesHtml = '';
+                    places.forEach(function (place) {
+                        placesHtml += makeTr(
+                                makeTd(place['name']) +
+                                makeTd(place['description']) +
+                                makeTd(place['equipment']) +
+                                makeTd(makeRemoveButton('btn btn-danger remove-place', place['place_id'], 'places', 'place_id'))
+                                );
+                    });
+                    $('#places-list').html(placesHtml);
+                }
+            });
 }
 
 function showReservations() {
-    $('#menu-title').text('Lista rezerwacji');
+    $('#menu-title').text('Reservations');
     locked = true;
     let response = getApi({
         'action': 'getReservations',
@@ -282,16 +310,19 @@ function showReservations() {
         let reservationsList = data['reservations'];
         let personsList = data['persons'];
         let placesList = data['places'];
-
+        updatePlacesEquipment(placesList);
         let reservationsHtml = '';
         if (reservationsList.length > 0) {
-            reservationsList.forEach(function (reservations) {
+            reservationsList.forEach(function (reservation) {
                 var tr = '';
-                for (key in reservations) {
-                    if (key !== 'reservation_id') {
-                        tr += makeTd(reservations[key], '');
+                for (key in reservation) {
+                    if (key !== 'reservation_id' && key !== 'place_id') {
+                        tr += makeTd(reservation[key], '');
+                    } else if (key == 'place_id') {
+                        tr += makeTd(placeEquipment[reservation['place_id']]['name'], '');
+                        tr += makeTd(placeEquipment[reservation['place_id']]['equipment'], '');
                     } else {
-                        tr += makeTd(makeButton("remove-reservation btn btn-danger", reservations[key], "Usuń"));
+                        tr += makeTd(makeRemoveButton("remove-reservation btn btn-danger", reservation[key], 'reservations', 'reservation_id'));
                     }
                 }
                 reservationsHtml += makeTr(tr, '');
@@ -300,16 +331,22 @@ function showReservations() {
         $('#reservations-list').html(reservationsHtml);
         let personsOptions = '<option value="">--</option>';
         personsList.forEach(function (person) {
-            personsOptions += makeOption(person['fullName'], person['person_id']);
+            personsOptions += makeOption(person['fullName'], person['person_id'], null);
         });
         $('#new-reservation-person').html(personsOptions);
         let placesOptions = '<option value="">--</option>';
         placesList.forEach(function (place) {
-            placesOptions += makeOption(place['name'], place['place_id']);
+            placesOptions += makeOption(place['name'], place['place_id'], placeEquipment[place['place_id']]['equipment']);
         });
         $('#new-reservation-place').html(placesOptions);
         locked = false;
     });
+
+    function updatePlacesEquipment(placesList) {
+        placesList.forEach(function (place) {
+            placeEquipment[place['place_id']] = {'equipment': place['equipment'], 'name': place['name']};
+        });
+    }
 }
 
 $(function () {
@@ -350,7 +387,8 @@ $(function () {
         if (!locked) {
             changeEquipmentPlace($(this).data('id'));
         }
-    })
+    });
+
     $('#add-person').click(function () {
         if (!locked) {
             addPerson();
@@ -371,6 +409,19 @@ $(function () {
 
     $('#save-equipment-place').click(function () {
         saveEquipmentPlace();
+    });
+
+    $(document).on('click', '.remove-button', function () {
+        removeItem($(this).data('id'), $(this).data('idname'), $(this).data('table'));
+    });
+
+    $(document).on('change', '#new-reservation-place', function () {
+        let placeId = $(this).val();
+        $('#new-reservation-equipment').text(placeEquipment[placeId]['equipment'] || '');
+    });
+
+    $('#reservations-date').change(function () {
+        showReservations();
     });
 
 })

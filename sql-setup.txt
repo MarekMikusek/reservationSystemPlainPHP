@@ -24,7 +24,7 @@ CREATE TABLE equipment(
     value DECIMAL(8,2),
     description VARCHAR(3000),
     place_id INT UNSIGNED,
-    FOREIGN KEY (place_id) REFERENCES places(place_id)
+    FOREIGN KEY (place_id) REFERENCES places(place_id) ON DELETE CASCADE
 );
 
 CREATE TABLE reservations(
@@ -33,8 +33,8 @@ CREATE TABLE reservations(
     place_id INT UNSIGNED NOT NULL,
     start DATETIME NOT NULL,
     end DATETIME NOT NULL,
-    FOREIGN KEY (person_id) REFERENCES persons(person_id),
-    FOREIGN KEY (place_id) REFERENCES places(place_id)
+    FOREIGN KEY (person_id) REFERENCES persons(person_id) ON DELETE CASCADE,
+    FOREIGN KEY (place_id) REFERENCES places(place_id) ON DELETE CASCADE
 );
 
 
