@@ -15,8 +15,6 @@
     <body>
         <h1 class="mb-5 text-center">Welcome to resevation system</h1>
         <div id="actions" class="ml-5 text-center">
-            <label for="reservations-date">Date: </label>
-            <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
             <button id="show-reservations" class="btn btn-primary m-3 main-menu-button" data-div="reservations">Reservations</button>
             <button id="show-places" class="btn btn-info m-3 main-menu-button" data-div="places">Places</button>
             <button id="show-equipment" class="btn btn-secondary m-3 main-menu-button" data-div="equipment">Equipment</button>
@@ -24,6 +22,10 @@
         </div>
         <h1 id="menu-title" class="mb-5 text-center">Reservations</h1>
         <div class="main-menu-item" id="reservations">
+            <div class="text-center">
+                <label for="reservations-date">Date: </label>
+                <input id="reservations-date" type="date" value="<?php echo date('Y-m-d'); ?>"> 
+            </div>
             <table class="table table-striped text-center">
                 <thead>
                     <tr>

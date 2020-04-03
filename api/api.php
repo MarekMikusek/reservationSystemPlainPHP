@@ -1,6 +1,7 @@
 <?php
 
 $action = $_POST['action'];
+include('./dbCredentials.inc');
 
 switch ($action) {
     case 'addEquipment':
@@ -53,8 +54,13 @@ function addPlace($place) {
 }
 
 function addReservation($reservation) {
-    return safeQuery('INSERT INTO reservations (person_id, place_id, start, end) VALUES (:person_id, :place_id, :start, :end)', stripTags($reservation), false);
-    ;
+    $checkCollision = safeQuery("SELECT count(*) FROM reservations WHERE person_id != :person_id AND place_id = :place_id AND ( CAST(:start AS DATETIME) <= end AND CAST(:end AS DATETIME) >= start ) ",
+            $reservation, true);
+    if ($checkCollision[0]['count(*)'] == 0) {
+        safeQuery('INSERT INTO reservations (person_id, place_id, start, end) VALUES (:person_id, :place_id, :start, :end)', stripTags($reservation), false);
+        return 1;
+    }
+    return -1;
 }
 
 function getEquipment() {
@@ -96,7 +102,6 @@ function getPlaces() {
 }
 
 function getReservations($date) {
-    // $date = '2020-03-31';
     $ret['reservations'] = safeQuery("SELECT CONCAT(pe.first_name,' ' ,pe.last_name) as fullname, r.start, r.end, r.place_id, r.reservation_id "
             . "FROM reservations r LEFT JOIN persons pe ON pe.person_id = r.person_id "
             . "WHERE date(r.start) = :date", ['date' => $date], true);
@@ -105,26 +110,31 @@ function getReservations($date) {
     return $ret;
 }
 
-function removeItem($item){
-    return safeQuery("DELETE FROM :table_name WHERE :id_name = :id", 
-            ['table_name' => $item['table'], 'id_name'=> $item['idName'], 'id'=>$item['id']], false);
+function removeItem($item) {
+    $tables = ['persons' => 'person_id', 'reservations' => 'reservation_id', 'places' => 'place_id', 'equipment' => 'equipment_id'];
+    if (isset($tables[$item['table']])) {
+        global $dbCredentials;
+        try {
+            $id = intval($item['id']);
+            $mysqli = new mysqli($dbCredentials['dbHost'], $dbCredentials['dbUser'], $dbCredentials['dbPassword'], $dbCredentials['dbName'], $dbCredentials['dbPort']);
+            $mysqli->query("DELETE FROM {$item['table']} WHERE {$tables[$item['table']]} = {$id}");
+            return true;
+        } catch (Exception $ex) {
+            die($ex->getMessage());
+        }
+    }
+    return false;
 }
 
 function safeQuery($statement, $data, bool $fetch = false) {
-    error_log($statement);
     $text = '';
     foreach ($data as $key => $value) {
         $text .= "key: {$key}, value: {$value};   ";
     }
-    error_log($text);
-    $dbType = 'mysql';
-    $dbHost = 'localhost:3306';
-    $dbUser = 'root';
-    $dbPassword = '';
-    $dbName = 'reservations_mm';
-    $dbCharset = 'utf8';
+    global $dbCredentials;
+
     try {
-        $db = new \PDO("{$dbType}:host={$dbHost};dbname={$dbName};charset={$dbCharset}", $dbUser, $dbPassword);
+        $db = new \PDO("{$dbCredentials['dbType']}:host={$dbCredentials['dbHost']};dbname={$dbCredentials['dbName']};charset={$dbCredentials['dbCharset']}", $dbCredentials['dbUser'], $dbCredentials['dbPassword']);
     } catch (PDOException $e) {
         die(json_encode(array('outcome' => false, 'message' => 'Unable to connect')));
     }
@@ -149,4 +159,5 @@ function stripTags($array) {
     unset($value);
     return $array;
 }
+
 ?>

@@ -5,6 +5,7 @@ var locked = false;
 var placeEquipment = {};
 
 function addReservation() {
+    $('#reservation-time-collision-warning').remove();
     locked = true;
     let date = $('#reservations-date').val();
     let reservation = getInputsData('#new-reservation-data');
@@ -17,9 +18,18 @@ function addReservation() {
             'reservation': reservation
         });
         resp
-                .then(function () {
-                    clearInputs('#new-reservation-data');
-                    showReservations();
+                .then(function (encoded) {
+                    console.log(encoded);
+                    let result = JSON.parse(encoded);
+                    console.log(result);
+                    if (result == 1) {
+                        clearInputs('#new-reservation-data');
+                        $('#new-reservation-equipment').text('');
+                        showReservations();
+                    } else {
+                        $('#add-reservation').after('<div id="reservation-time-collision-warning">Reservation cannot be added <br> time collision</div>');
+                    }
+
                 })
                 .fail(function () {
 
@@ -190,8 +200,6 @@ function removeItem(id, idName, tableName) {
         }
     });
     response.then(function () {
-        console.log(response);
-        console.log(`#show-${tableName}`);
         $(`#show-${tableName}`).click();
     });
 
@@ -315,16 +323,13 @@ function showReservations() {
         if (reservationsList.length > 0) {
             reservationsList.forEach(function (reservation) {
                 var tr = '';
-                for (key in reservation) {
-                    if (key !== 'reservation_id' && key !== 'place_id') {
-                        tr += makeTd(reservation[key], '');
-                    } else if (key == 'place_id') {
-                        tr += makeTd(placeEquipment[reservation['place_id']]['name'], '');
-                        tr += makeTd(placeEquipment[reservation['place_id']]['equipment'], '');
-                    } else {
-                        tr += makeTd(makeRemoveButton("remove-reservation btn btn-danger", reservation[key], 'reservations', 'reservation_id'));
-                    }
-                }
+                tr += makeTd(reservation['fullname'], '');
+                tr += makeTd(reservation['start'].substring(10, 16), '');
+                tr += makeTd(reservation['end'].substring(10, 16), '');
+                tr += makeTd(placeEquipment[reservation['place_id']]['name'], '');
+                tr += makeTd(placeEquipment[reservation['place_id']]['equipment'], '');
+                tr += makeTd(makeRemoveButton("remove-reservation btn btn-danger", reservation['reservation_id'], 'reservations', 'reservation_id'));
+
                 reservationsHtml += makeTr(tr, '');
             });
         }
